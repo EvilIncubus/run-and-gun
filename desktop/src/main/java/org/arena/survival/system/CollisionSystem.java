@@ -9,8 +9,12 @@ import org.arena.survival.entity.Player;
 import org.arena.survival.screen.MenuScreen;
 
 import java.util.Iterator;
+import java.util.Random;
 
 public class CollisionSystem {
+
+    Random random = new Random();
+    private int damage = 1;
 
     public int update(Array<Bullet> bullets, Array<Enemy> enemies, float delta, int score) {
         // обновляем пули и проверяем коллизии
@@ -26,11 +30,14 @@ public class CollisionSystem {
                     bulletIter.remove();
 
                     // наносим урон врагу
-                    boolean dead = enemy.takeDamage(1);
+                    boolean dead = enemy.takeDamage(damage);
 
                     if (dead) {
                         enemyIter.remove(); // удаляем врага только если HP <= 0
                         score += 1; // увеличиваем очки
+                        if (random.nextInt(100) < 10) {
+                            damage += 1;
+                        }
                     }
                     break; // если один bullet убивает одного врага
                 }

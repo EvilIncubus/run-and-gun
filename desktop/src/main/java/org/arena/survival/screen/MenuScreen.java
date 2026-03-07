@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.controllers.Controller;
+import com.badlogic.gdx.controllers.ControllerMapping;
 import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -47,6 +48,14 @@ public class MenuScreen implements Screen {
         if (!Controllers.getControllers().isEmpty()) {
             controller = Controllers.getControllers().first();
             Gdx.app.log("Controller", "Connected: " + controller.getName());
+
+            // Логируем mapping
+            ControllerMapping mapping = controller.getMapping();
+            if(mapping != null) {
+                Gdx.app.log("Controller", "Mapping detected, jump button = " + mapping.buttonA);
+            } else {
+                Gdx.app.log("Controller", "No mapping available, fallback to default axes/buttons");
+            }
         }
     }
 

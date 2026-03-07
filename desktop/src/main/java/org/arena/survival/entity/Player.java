@@ -31,6 +31,9 @@ public class Player {
 
     private int health = 5;
 
+    private float shootCooldown = 0.5f;
+    private float timer = 0f;
+
     private Array<Bullet> bullets = new Array<>();
 
     public Player(float x, float y, float size, float speed) {
@@ -81,5 +84,30 @@ public class Player {
 
     public void takeDamage(int dmg) {
         health -= dmg;
+    }
+
+    public void setAddHealth(int extraHealth){
+        health += extraHealth;
+    }
+
+    public float getPlayerTimer() {
+        return timer;
+    }
+
+    public void setPlayerTimer(float timer) {
+        this.timer = timer;
+    }
+
+
+    public float getShootCooldownPlayer() {
+        return shootCooldown;
+    }
+
+    public void setShootCooldownPlayer(float shootCooldown) {
+        this.shootCooldown = shootCooldown;
+    }
+
+    public void update(float delta) {
+        timer -= delta;
     }
 }

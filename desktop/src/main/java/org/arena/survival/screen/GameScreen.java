@@ -7,6 +7,7 @@ import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -18,6 +19,7 @@ import org.arena.survival.entity.Enemy;
 import org.arena.survival.entity.EnemyMelee;
 import org.arena.survival.entity.EnemyShooter;
 import org.arena.survival.entity.Player;
+import org.arena.survival.input.InputManager;
 import org.arena.survival.input.PlayerController;
 import org.arena.survival.render.PlayerRenderer;
 import org.arena.survival.system.*;
@@ -52,6 +54,7 @@ public class GameScreen implements Screen {
     private final Player player;
 
     private PlayerController playerController;
+    private InputManager inputManager;
     private PlayerMovementSystem movementSystem;
     private WeaponSystem weaponSystem;
     private BulletSystem bulletSystem;
@@ -77,6 +80,7 @@ public class GameScreen implements Screen {
     private boolean paused = false; // флаг паузы
     private boolean screenChanging = false;
     private boolean endGame = false;
+    private boolean winGame = false;
 
     public GameScreen(ArenaGame game, Controller controller) {
         this.game = game;
@@ -96,6 +100,7 @@ public class GameScreen implements Screen {
         player = new Player(worldWidth/2, worldHeight/2,40,300);
 
         playerController = new PlayerController(camera);
+        inputManager = new InputManager(playerController, controller);
 
         movementSystem = new PlayerMovementSystem(worldWidth, worldHeight);
 
@@ -143,7 +148,7 @@ public class GameScreen implements Screen {
 
         allBatchRender();
 
-        if (!paused && !endGame) {
+        if (!paused && !endGame && !winGame) {
             logicRender(delta);
             allShapesRender();
         }
@@ -169,7 +174,11 @@ public class GameScreen implements Screen {
 
         // Установка Паузы
         if (!paused) {
-            paused = pauseSystem.setPause(paused);
+            if (controller!=null){
+                paused = pauseSystem.setPauseWithController(paused, controller);
+            }else {
+                paused = pauseSystem.setPause(paused);
+            }
         }
 
 
@@ -177,15 +186,15 @@ public class GameScreen implements Screen {
 
     private void logicRender(float delta) {
 
-        Vector2 moveDir = playerController.movementInput();
+        Vector2 moveDir = inputManager.getMoveDirection();
 
         movementSystem.move(player, moveDir, delta);
 
-        Vector2 aimDir = playerController.mouseDirection(player);
+        Vector2 aimDir = inputManager.getAimDirection(player);
 
         player.setRotation(aimDir.angleDeg());
 
-        weaponSystem.update(delta);
+        player.update(delta);
 
         enemyAI.update(delta);
 
@@ -200,7 +209,7 @@ public class GameScreen implements Screen {
                 game
         );
 
-        if (playerController.isShootPressed()) {
+        if (inputManager.isShootPressed()) {
             weaponSystem.shoot(player, aimDir);
         }
 
@@ -237,16 +246,27 @@ public class GameScreen implements Screen {
         hudSystem.renderHUDInfo(font, batch, player, worldHeight, waveNumber, score, maxWaves);
 
         if (paused) {
+            font.setColor(Color.WHITE);
             font.draw(batch, "PAUSED", worldWidth / 2f - 60, worldHeight / 2f + 20);
             font.draw(batch, "Press ENTER to resume", worldWidth / 2f - 140, worldHeight / 2f);
             font.draw(batch, "Press ESC to exit to menu", worldWidth / 2f - 160, worldHeight / 2f - 20);
         }
 
         if (endGame) {
+            font.setColor(Color.RED);
             font.draw(batch, "Game Over", worldWidth / 2f - 60, worldHeight / 2f + 20);
             font.draw(batch, "Your score = " + score, worldWidth / 2f - 140, worldHeight / 2f);
             font.draw(batch, "Press ESC to exit to menu", worldWidth / 2f - 160, worldHeight / 2f - 20);
         }
+
+        if (winGame) {
+            font.setColor(Color.GREEN);
+            font.draw(batch, "Game WIN!", worldWidth / 2f - 60, worldHeight / 2f + 20);
+            font.draw(batch, "Your score = " + score, worldWidth / 2f - 140, worldHeight / 2f);
+            font.draw(batch, "Press ESC to exit to menu", worldWidth / 2f - 160, worldHeight / 2f - 20);
+        }
+
+        font.setColor(Color.CLEAR);
 
         for (Enemy enemy : enemies) {
             enemy.render(batch);
@@ -274,6 +294,7 @@ public class GameScreen implements Screen {
         if (waveNumber > maxWaves) {
             game.setScreen(new MenuScreen(game)); // пока возвращаем в меню
             System.out.println("Victory! Final score: " + score);
+            winGame = true;
         }
 
         shapeRenderer.end();
@@ -303,7 +324,9 @@ public class GameScreen implements Screen {
 
             if (waveTimer >= waveDelay) {
                 waveNumber++;
-                waveSystem.spawnWave(enemies, waveNumber, batch);
+                player.setAddHealth(3);
+                player.setShootCooldownPlayer(player.getShootCooldownPlayer()-0.05f);
+                waveSystem.spawnWave(enemies, waveNumber);
                 waveTimer = 0;
             }
         }

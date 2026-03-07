@@ -17,7 +17,7 @@ public class Bullet {
     private Vector2 direction;
 
     // скорость пули
-    private float speed = 600;
+    private float speed = 1000;
 
     // размер
     private float size = 6;
@@ -88,5 +88,9 @@ public class Bullet {
                 position.x > worldSize ||
                 position.y < -worldSize ||
                 position.y > worldSize;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 }

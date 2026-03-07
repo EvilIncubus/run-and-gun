@@ -9,8 +9,7 @@ import org.arena.survival.entity.EnemyShooter;
 import org.arena.survival.entity.Player;
 
 public class WeaponSystem {
-    private float shootCooldown = 0.1f;
-    private float timer = 0f;
+
 
     private final BulletSystem bulletSystem;
     private final EnemyBulletSystem enemyBulletSystem;
@@ -21,13 +20,9 @@ public class WeaponSystem {
         this.enemyBulletSystem = enemyBulletSystem;
     }
 
-    public void update(float delta) {
-        timer -= delta;
-    }
-
     public void shoot(Player player, Vector2 direction) {
 
-        if (timer <= 0) {
+        if (player.getPlayerTimer() <= 0) {
 
             Vector2 spawn = new Vector2(
                     player.getCenterX(),
@@ -40,7 +35,7 @@ public class WeaponSystem {
 
             shootSound.play(0.5f);
 
-            timer = shootCooldown;
+            player.setPlayerTimer(player.getShootCooldownPlayer());
         }
     }
 
@@ -53,8 +48,10 @@ public class WeaponSystem {
                     enemyShooter.getCenterY()
             );
 
+            Bullet bullet = new Bullet(spawn, direction);
+            bullet.setSpeed(200);
             enemyBulletSystem.addBullet(
-                    new Bullet(spawn, direction)
+                    bullet
             );
 
             shootSound.play(0.5f);
