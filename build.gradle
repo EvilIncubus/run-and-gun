@@ -1,0 +1,20 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+allprojects {
+    apply plugin: "eclipse"
+    apply plugin: "idea"
+
+    version = "1.0"
+    ext {
+        gdxVersion = "1.14.0"
+        gdxControllersVersion = '2.2.4' // see badges above for latest versions
+    }
+
+    repositories {
+        mavenCentral()
+    }
+}

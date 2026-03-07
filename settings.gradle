@@ -1,0 +1,5 @@
+rootProject.name = 'arena'
+include 'core'
+include 'desktop'
+include 'android'
+
