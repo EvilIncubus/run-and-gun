@@ -30,7 +30,7 @@ public class EnemyAI {
                 player.damage(1);
 
                 if (player.getHealth() <= 0) {
-                    game.setScreen(new MenuScreen(game));
+                    return;
                 }
             }
            knockbackSystem.fromEnemyToPlayer(enemy, player, knockbackStrength);

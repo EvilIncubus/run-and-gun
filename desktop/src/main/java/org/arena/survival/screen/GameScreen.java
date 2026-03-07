@@ -15,6 +15,8 @@ import com.badlogic.gdx.utils.Array;
 import org.arena.survival.ArenaGame;
 import org.arena.survival.assets.Assets;
 import org.arena.survival.entity.Enemy;
+import org.arena.survival.entity.EnemyMelee;
+import org.arena.survival.entity.EnemyShooter;
 import org.arena.survival.entity.Player;
 import org.arena.survival.input.PlayerController;
 import org.arena.survival.render.PlayerRenderer;
@@ -53,6 +55,7 @@ public class GameScreen implements Screen {
     private PlayerMovementSystem movementSystem;
     private WeaponSystem weaponSystem;
     private BulletSystem bulletSystem;
+    private EnemyBulletSystem enemyBulletSystem;
     private PlayerRenderer playerRenderer;
 
     // массив врагов
@@ -72,8 +75,8 @@ public class GameScreen implements Screen {
     private final BitmapFont font;
 
     private boolean paused = false; // флаг паузы
-
     private boolean screenChanging = false;
+    private boolean endGame = false;
 
     public GameScreen(ArenaGame game, Controller controller) {
         this.game = game;
@@ -90,21 +93,6 @@ public class GameScreen implements Screen {
         font = new BitmapFont(); // стандартный шрифт LibGDX
         font.getData().setScale(2f); // увеличиваем шрифт
 
-//        // Создаём игрока в центре экрана
-//        player = new Player(
-//                worldWidth / 2f,
-//                worldHeight / 2f,
-//                40f,   // размер
-//                300f,  // скорость
-//                camera,
-//                shapeRenderer,
-//                worldWidth,
-//                worldHeight,
-//                batch
-//        );
-//
-//        player.setUsingController(controller != null);
-
         player = new Player(worldWidth/2, worldHeight/2,40,300);
 
         playerController = new PlayerController(camera);
@@ -113,13 +101,16 @@ public class GameScreen implements Screen {
 
         bulletSystem = new BulletSystem();
 
-        weaponSystem = new WeaponSystem(bulletSystem);
+        enemyBulletSystem = new EnemyBulletSystem();
+
+        weaponSystem = new WeaponSystem(bulletSystem, enemyBulletSystem);
 
         playerRenderer = new PlayerRenderer(Assets.player);
 
         // инициализация массива врагов
         enemies = new Array<>();
-        enemies.add(new Enemy(1000, 400, batch));
+        enemies.add(new EnemyMelee(1000, 400));
+        enemies.add(new EnemyShooter(400, 500));
     }
 
     // --------------------- Методы Screen ---------------------
@@ -152,15 +143,15 @@ public class GameScreen implements Screen {
 
         allBatchRender();
 
-        if (!paused) {
+        if (!paused && !endGame) {
             logicRender(delta);
             allShapesRender();
         }
 
         // В паузе
 
-        if (paused) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+        if (paused || endGame) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) && paused) {
                 paused = false; // снять паузу
             }
             if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
@@ -172,6 +163,10 @@ public class GameScreen implements Screen {
             }
         }
 
+        if (player.getHealth() <= 0) {
+            endGame = true;
+        }
+
         // Установка Паузы
         if (!paused) {
             paused = pauseSystem.setPause(paused);
@@ -181,7 +176,6 @@ public class GameScreen implements Screen {
     }
 
     private void logicRender(float delta) {
-//        player.update(delta, controller);
 
         Vector2 moveDir = playerController.movementInput();
 
@@ -197,8 +191,24 @@ public class GameScreen implements Screen {
 
         bulletSystem.update(delta);
 
+        enemyBulletSystem.update(delta);
+
+        collisionSystem.checkEnemyBullets(
+                enemyBulletSystem.getBullets(),
+                player,
+                delta,
+                game
+        );
+
         if (playerController.isShootPressed()) {
             weaponSystem.shoot(player, aimDir);
+        }
+
+        for (Enemy enemy : enemies) {
+            if (enemy instanceof EnemyShooter) {
+                Vector2 dir = new Vector2(player.getPosition()).sub(enemy.getPosition()).nor();
+                weaponSystem.shoot(enemy, dir);
+            }
         }
 
         score = collisionSystem.update(bulletSystem.getBullets(), enemies, delta, score);
@@ -206,7 +216,7 @@ public class GameScreen implements Screen {
         float knockbackStrength = 150; // сила отталкивания
 
         for (Enemy enemy : enemies) {
-            enemy.update(player, Gdx.graphics.getDeltaTime());
+            enemy.update(player, delta);
 
             enemyAI.enemyMovementAndKnockback(
                     enemy,
@@ -232,6 +242,16 @@ public class GameScreen implements Screen {
             font.draw(batch, "Press ESC to exit to menu", worldWidth / 2f - 160, worldHeight / 2f - 20);
         }
 
+        if (endGame) {
+            font.draw(batch, "Game Over", worldWidth / 2f - 60, worldHeight / 2f + 20);
+            font.draw(batch, "Your score = " + score, worldWidth / 2f - 140, worldHeight / 2f);
+            font.draw(batch, "Press ESC to exit to menu", worldWidth / 2f - 160, worldHeight / 2f - 20);
+        }
+
+        for (Enemy enemy : enemies) {
+            enemy.render(batch);
+        }
+
         batch.end();
     }
 
@@ -240,13 +260,11 @@ public class GameScreen implements Screen {
 
 //        player.render();
         bulletSystem.render(shapeRenderer);
+        enemyBulletSystem.render(shapeRenderer);
 
         hudSystem.renderHUDHealth(shapeRenderer, worldHeight, player);
 
         for (Enemy enemy : enemies) {
-            enemy.render();
-
-            shapeRenderer.setColor(Color.RED);
             shapeRenderer.rect(enemy.getPosition().x, enemy.getPosition().y + enemy.getSize() + 2, enemy.getSize() * ((float) enemy.getHealth() / 3), 5);
         }
 

@@ -78,4 +78,8 @@ public class Player {
     public void damage(int dmg) {
         health -= dmg;
     }
+
+    public void takeDamage(int dmg) {
+        health -= dmg;
+    }
 }

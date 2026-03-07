@@ -8,7 +8,7 @@ public class DesktopLauncher {
     public static void main(String[] args) {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setTitle("Arena Survival");
-        config.setWindowedMode(800, 600);
+        config.setWindowedMode(1920, 1080);
         config.useVsync(true);
 
         new Lwjgl3Application(new ArenaGame(), config);

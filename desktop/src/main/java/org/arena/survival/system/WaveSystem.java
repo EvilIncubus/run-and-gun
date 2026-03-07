@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import org.arena.survival.entity.Enemy;
+import org.arena.survival.entity.EnemyMelee;
+import org.arena.survival.entity.EnemyShooter;
 
 import java.util.List;
 
@@ -19,7 +21,8 @@ public class WaveSystem {
             float y = (float) Math.random() * worldHeight;
 
             // создаём врага и добавляем в массив
-            enemies.add(new Enemy(x, y, batch));
+            enemies.add(new EnemyMelee(x, y));
+            enemies.add(new EnemyShooter(x, y));
         }
 
         System.out.println("Wave " + wave + " spawned with " + enemyCount + " enemies!");

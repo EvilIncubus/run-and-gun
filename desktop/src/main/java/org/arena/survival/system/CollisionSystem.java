@@ -1,13 +1,14 @@
 package org.arena.survival.system;
 
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import org.arena.survival.ArenaGame;
 import org.arena.survival.entity.Bullet;
 import org.arena.survival.entity.Enemy;
 import org.arena.survival.entity.Player;
+import org.arena.survival.screen.MenuScreen;
 
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 public class CollisionSystem {
 
@@ -41,5 +42,33 @@ public class CollisionSystem {
             }
         }
         return score;
+    }
+
+    public void checkEnemyBullets(Array<Bullet> enemyBullets, Player player, float delta, ArenaGame game) {
+
+        Iterator<Bullet> bulletIter = enemyBullets.iterator();
+        Rectangle playerBounds = new Rectangle(player.getCenterX() - player.getSize() / 2, player.getCenterY() - player.getSize() / 2, player.getSize(), player.getSize());
+
+        while (bulletIter.hasNext()) {
+            Bullet bullet = bulletIter.next();
+
+            // обновляем движение пули
+            bullet.update(delta);
+
+            // проверка на столкновение с игроком
+            if (bullet.getBounds().overlaps(playerBounds)) {
+                player.takeDamage(1);   // наносим урон игроку
+                if (player.getHealth() <= 0) {
+                    return;
+                }
+                bulletIter.remove();     // удаляем пулю
+                continue;
+            }
+
+            // удаление пули за пределами карты
+            if (bullet.isOutOfBounds()) {
+                bulletIter.remove();
+            }
+        }
     }
 }
