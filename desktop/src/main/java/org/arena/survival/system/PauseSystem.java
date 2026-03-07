@@ -18,8 +18,10 @@ public class PauseSystem {
      * @return true if the game should be paused, false otherwise
      */
     public boolean setPause(boolean paused){
-        // Toggles pause on ESC key press
-        return !paused && (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE));
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            return !paused;
+        }
+        return paused;
     }
 
     /**
@@ -30,7 +32,9 @@ public class PauseSystem {
      * @return true if the game should be paused, false otherwise
      */
     public boolean setPauseWithController(boolean paused, Controller controller) {
-        // Toggles pause on ESC key press or controller button 1 press
-        return !paused && (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || controller.getButton(1));
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || controller.getButton(1)) {
+            return !paused;
+        }
+        return paused;
     }
 }
