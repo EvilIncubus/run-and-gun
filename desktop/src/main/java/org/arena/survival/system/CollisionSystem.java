@@ -6,44 +6,72 @@ import org.arena.survival.ArenaGame;
 import org.arena.survival.entity.Bullet;
 import org.arena.survival.entity.Enemy;
 import org.arena.survival.entity.Player;
-import org.arena.survival.screen.MenuScreen;
 
 import java.util.Iterator;
 import java.util.Random;
 
+/**
+ * Handles all collision logic in the game.
+ * <p>
+ * Responsibilities include:
+ * <ul>
+ *     <li>Detecting collisions between player bullets and enemies</li>
+ *     <li>Applying damage to enemies</li>
+ *     <li>Removing bullets that go out of bounds</li>
+ *     <li>Detecting collisions between enemy bullets and the player</li>
+ *     <li>Updating player health and game state based on collisions</li>
+ * </ul>
+ */
 public class CollisionSystem {
 
-    Random random = new Random();
+    /** Random generator for chance-based effects (like damage increase) */
+    private final Random random = new Random();
+
+    /** Damage dealt by each bullet */
     private int damage = 1;
 
+    /**
+     * Updates all collisions between player bullets and enemies.
+     * <p>
+     * Each bullet is moved according to its update logic. If it overlaps an enemy,
+     * it deals damage and may remove the enemy if its health reaches zero.
+     * Bullets that go out of bounds are also removed.
+     *
+     * @param bullets array of player bullets
+     * @param enemies array of active enemies
+     * @param delta time elapsed since last frame (seconds)
+     * @param score current player score
+     * @return updated score after handling collisions
+     */
     public int update(Array<Bullet> bullets, Array<Enemy> enemies, float delta, int score) {
-        // обновляем пули и проверяем коллизии
         Iterator<Bullet> bulletIter = bullets.iterator();
         while (bulletIter.hasNext()) {
             Bullet bullet = bulletIter.next();
             bullet.update(delta);
 
-            // проверка на столкновение с врагами
+            // check collision with enemies
             for (Iterator<Enemy> enemyIter = enemies.iterator(); enemyIter.hasNext(); ) {
                 Enemy enemy = enemyIter.next();
                 if (bullet.getBounds().overlaps(enemy.getBounds())) {
                     bulletIter.remove();
 
-                    // наносим урон врагу
+                    // apply damage to enemy
                     boolean dead = enemy.takeDamage(damage);
 
                     if (dead) {
-                        enemyIter.remove(); // удаляем врага только если HP <= 0
-                        score += 1; // увеличиваем очки
+                        enemyIter.remove();
+                        score += 1;
+
+                        // 10% chance to increase bullet damage
                         if (random.nextInt(100) < 10) {
                             damage += 1;
                         }
                     }
-                    break; // если один bullet убивает одного врага
+                    break; // one bullet hits only one enemy
                 }
             }
 
-            // удаление пули за пределами карты
+            // remove bullets that go out of bounds
             if (bullet.isOutOfBounds()) {
                 bulletIter.remove();
             }
@@ -51,28 +79,47 @@ public class CollisionSystem {
         return score;
     }
 
+    /**
+     * Checks collisions between enemy bullets and the player.
+     * <p>
+     * Each enemy bullet is updated, and if it overlaps the player,
+     * the player takes damage. Bullets are removed if they hit the player
+     * or go out of bounds.
+     *
+     * @param enemyBullets array of bullets fired by enemies
+     * @param player the player entity
+     * @param delta time elapsed since last frame (seconds)
+     * @param game reference to the main game (for potential game state updates)
+     */
     public void checkEnemyBullets(Array<Bullet> enemyBullets, Player player, float delta, ArenaGame game) {
 
         Iterator<Bullet> bulletIter = enemyBullets.iterator();
-        Rectangle playerBounds = new Rectangle(player.getCenterX() - player.getSize() / 2, player.getCenterY() - player.getSize() / 2, player.getSize(), player.getSize());
+        Rectangle playerBounds = new Rectangle(
+                player.getCenterX() - player.getSize() / 2,
+                player.getCenterY() - player.getSize() / 2,
+                player.getSize(),
+                player.getSize()
+        );
 
         while (bulletIter.hasNext()) {
             Bullet bullet = bulletIter.next();
 
-            // обновляем движение пули
+            // update bullet movement
             bullet.update(delta);
 
-            // проверка на столкновение с игроком
+            // check collision with player
             if (bullet.getBounds().overlaps(playerBounds)) {
-                player.takeDamage(1);   // наносим урон игроку
+                player.takeDamage(1);
+
                 if (player.getHealth() <= 0) {
-                    return;
+                    return; // player dead, stop further processing
                 }
-                bulletIter.remove();     // удаляем пулю
+
+                bulletIter.remove();
                 continue;
             }
 
-            // удаление пули за пределами карты
+            // remove bullets that go out of bounds
             if (bullet.isOutOfBounds()) {
                 bulletIter.remove();
             }
