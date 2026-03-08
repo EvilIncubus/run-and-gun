@@ -17,9 +17,6 @@ public class EnemyMelee extends Enemy {
     /** Texture used for rendering the enemy. */
     private Texture texture;
 
-    /** Movement speed of the enemy in units per second. */
-    private float speed;
-
     /** Rotation angle of the enemy in degrees. */
     private float rotation;
 
@@ -33,7 +30,7 @@ public class EnemyMelee extends Enemy {
     public EnemyMelee(float x, float y) {
         super(x, y);
         this.texture = Assets.enemy;
-        this.speed = 100f + (float) Math.random() * (250f - 100f);
+        super.setSpeed(100f + (float) Math.random() * (250f - 100f));
     }
 
     /**
@@ -95,7 +92,7 @@ public class EnemyMelee extends Enemy {
         // Normalize and move towards player
         if (direction.len() > 0) {
             direction.nor();
-            super.getPosition().mulAdd(direction, speed * delta);
+            super.getPosition().mulAdd(direction, super.getSpeed() * delta);
         }
 
         // Update rotation to face player

@@ -175,5 +175,6 @@ public class MenuScreen implements Screen {
         skin.dispose();
         controller = null;
         gameMusic.dispose();
+        Assets.dispose();
     }
 }

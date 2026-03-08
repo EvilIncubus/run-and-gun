@@ -40,7 +40,7 @@ public class HUDSystem {
         shapeRenderer.rect(
                 enemy.getPosition().x,
                 enemy.getPosition().y + enemy.getSize() + 2,
-                enemy.getSize() * ((float) enemy.getHealth() / 3),
+                enemy.getSize() * ((float) enemy.getHealth() / enemy.getMaxHealth()),
                 5
         );
     }

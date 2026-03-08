@@ -21,6 +21,12 @@ public abstract class Enemy {
     /** Current health points of the enemy. */
     private int health;
 
+    /** Current health points of the enemy. */
+    private int maxHealth;
+
+    /** Movement speed of the enemy in units per second. */
+    private float speed;
+
     /** Size of the enemy (width and height). */
     private float size = 40;
 
@@ -43,6 +49,7 @@ public abstract class Enemy {
     public Enemy(float x, float y) {
         position = new Vector2(x, y);
         health = MathUtils.random(5, 10);
+        maxHealth = health;
         bounds = new Rectangle(position.x, position.y, size, size);
     }
 
@@ -192,5 +199,21 @@ public abstract class Enemy {
      */
     public void setShootCooldownEnemy(float shootCooldownEnemy) {
         this.shootCooldownEnemy = shootCooldownEnemy;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
+
+    public void setMaxHealth(int maxHealth) {
+        this.maxHealth = maxHealth;
     }
 }

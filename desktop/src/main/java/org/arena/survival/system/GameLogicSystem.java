@@ -197,7 +197,7 @@ public class GameLogicSystem {
             if (waveTimer >= waveDelay) {
                 gameScreen.setWaveNumber(gameScreen.getWaveNumber() + 1);
                 player.setAddHealth(3);
-                player.setShootCooldownPlayer(player.getShootCooldownPlayer() - 0.05f);
+                player.setShootCooldownPlayer(player.getShootCooldownPlayer() - 0.03f);
                 waveSystem.spawnWave(enemies, gameScreen.getWaveNumber());
                 waveTimer = 0;
             }
