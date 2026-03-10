@@ -43,7 +43,7 @@ public class Player {
 
     private boolean homingBullets = false;
 
-    private int damage = 10;
+    private int damage = 1;
 
     /** Array of bullets shot by the player. */
     private Array<Bullet> bullets = new Array<>();
