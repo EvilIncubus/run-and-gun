@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Array;
 import org.arena.survival.assets.Assets;
 import org.arena.survival.entity.Enemy;
 import org.arena.survival.entity.Player;
+import org.arena.survival.entity.UpgradeCard;
 import org.arena.survival.system.HUDSystem;
 
 /**
@@ -90,6 +91,37 @@ public class BatchRender {
      */
     public void render(OrthographicCamera camera) {
         batch.setProjectionMatrix(camera.combined);
+    }
+
+    public void renderUpgradeCards(Array<UpgradeCard> cards) {
+        batch.begin();
+        float cardWidth = 300;
+        float cardHeight = 120;
+
+        float startX = 500;
+        float startY = 600;
+
+        for (int i = 0; i < cards.size; i++) {
+
+            UpgradeCard card = cards.get(i);
+
+            float x = startX + i * (cardWidth + 40);
+
+            font.draw(
+                    batch,
+                    "Press " + (i + 1),
+                    x + 20,
+                    startY + 90
+            );
+
+            font.draw(
+                    batch,
+                    card.getTitle(),
+                    x + 20,
+                    startY + 50
+            );
+        }
+        batch.end();
     }
 
     /**

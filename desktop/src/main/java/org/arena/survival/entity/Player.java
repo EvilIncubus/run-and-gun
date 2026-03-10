@@ -39,6 +39,12 @@ public class Player {
     /** Timer to track shooting cooldown. */
     private float timer = 0f;
 
+    private boolean doubleShot = false;
+
+    private boolean homingBullets = false;
+
+    private int damage = 10;
+
     /** Array of bullets shot by the player. */
     private Array<Bullet> bullets = new Array<>();
 
@@ -99,6 +105,10 @@ public class Player {
      */
     public float getSpeed() {
         return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 
     /**
@@ -209,5 +219,29 @@ public class Player {
      */
     public void update(float delta) {
         timer -= delta;
+    }
+
+    public boolean isDoubleShot() {
+        return doubleShot;
+    }
+
+    public void setDoubleShot(boolean doubleShot) {
+        this.doubleShot = doubleShot;
+    }
+
+    public boolean isHomingBullets() {
+        return homingBullets;
+    }
+
+    public void setHomingBullets(boolean homingBullets) {
+        this.homingBullets = homingBullets;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
     }
 }

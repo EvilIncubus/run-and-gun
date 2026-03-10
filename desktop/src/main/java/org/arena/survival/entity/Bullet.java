@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * Represents a bullet in the game.
@@ -25,6 +26,8 @@ public class Bullet {
     /** Size of the bullet (width and height). */
     private float size = 6;
 
+    private boolean homing;
+
     /** Bounding rectangle for collision detection. */
     private Rectangle bounds;
 
@@ -34,9 +37,10 @@ public class Bullet {
      * @param startPosition the initial position of the bullet
      * @param direction the movement direction; will be normalized internally
      */
-    public Bullet(Vector2 startPosition, Vector2 direction) {
+    public Bullet(Vector2 startPosition, Vector2 direction, boolean homing) {
         this.position = new Vector2(startPosition);
         this.direction = new Vector2(direction).nor();
+        this.homing = homing;
         this.bounds = new Rectangle(position.x - size / 2, position.y - size / 2, size, size);
     }
 
@@ -61,9 +65,21 @@ public class Bullet {
      *
      * @param delta the time elapsed since the last frame in seconds
      */
-    public void update(float delta) {
-        movementUpdate(delta);
+    public void update(float delta, Array<Enemy> enemies) {
+        movementUpdate(delta, enemies);
     }
+
+    /**
+     * Updates the bullet logic, including movement.
+     *
+     * @param delta the time elapsed since the last frame in seconds
+     */
+    public void updateEnemyBullet(float delta) {
+        position.mulAdd(direction, speed * delta);
+        bounds.setPosition(position.x - size / 2, position.y - size / 2);
+    }
+
+
 
     /**
      * Moves the bullet based on its direction and speed.
@@ -71,9 +87,34 @@ public class Bullet {
      *
      * @param delta the time elapsed since the last frame in seconds
      */
-    public void movementUpdate(float delta) {
-        position.mulAdd(direction, speed * delta);
-        bounds.setPosition(position.x - size / 2, position.y - size / 2);
+    public void movementUpdate(float delta, Array<Enemy> enemies) {
+        if (homing && enemies.size > 0) {
+
+            Enemy closest = null;
+            float minDist = Float.MAX_VALUE;
+
+            for (Enemy enemy : enemies) {
+
+                float dist = position.dst(enemy.getPosition());
+
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = enemy;
+                }
+            }
+
+            if (closest != null) {
+
+                Vector2 targetDir = new Vector2(
+                        closest.getPosition()
+                ).sub(position).nor();
+
+                direction.lerp(targetDir, 0.05f);
+            }
+        }
+            position.mulAdd(direction, speed * delta);
+            bounds.setPosition(position.x - size / 2, position.y - size / 2);
+
     }
 
     /**

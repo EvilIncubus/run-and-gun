@@ -49,6 +49,7 @@ public class GameScreen implements Screen {
     private boolean screenChanging = false;
     private boolean endGame = false;
     private boolean winGame = false;
+    private boolean upgradeActive = false;
 
     // --------------------- Constructor ---------------------
 
@@ -117,9 +118,16 @@ public class GameScreen implements Screen {
                 worldHeight, worldWidth, waveNumber, maxWaves, score);
 
         // Update game logic and render shapes if not paused or ended
-        if (!paused && !endGame && !winGame) {
+        if (!paused && !endGame && !winGame && !upgradeActive) {
             gameLogicSystem.update(delta, player, enemies, game);
             shapesRender.allShapesRender(enemies, worldHeight, player);
+        }
+
+        if (upgradeActive) {
+            gameLogicSystem.handleUpgradeSelection(player);
+            batchRender.renderUpgradeCards(
+                    gameLogicSystem.getCurrentCards()
+            );
         }
 
         // Pause menu handling
@@ -199,6 +207,15 @@ public class GameScreen implements Screen {
 
     public int getScore() {
         return score;
+    }
+
+
+    public boolean isUpgradeActive() {
+        return upgradeActive;
+    }
+
+    public void setUpgradeActive(boolean upgradeActive) {
+        this.upgradeActive = upgradeActive;
     }
 
     // --------------------- Private Helper Methods ---------------------

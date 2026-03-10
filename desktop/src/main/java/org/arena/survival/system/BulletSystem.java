@@ -3,6 +3,7 @@ package org.arena.survival.system;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
 import org.arena.survival.entity.Bullet;
+import org.arena.survival.entity.Enemy;
 
 /**
  * Manages all player bullets in the game.
@@ -35,9 +36,9 @@ public class BulletSystem {
      *
      * @param delta the time elapsed since the last frame in seconds
      */
-    public void update(float delta) {
+    public void update(float delta, Array<Enemy> enemies) {
         for (Bullet bullet : bullets) {
-            bullet.update(delta);
+            bullet.update(delta, enemies);
         }
     }
 

@@ -1,6 +1,7 @@
 package org.arena.survival.system;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
@@ -9,6 +10,7 @@ import org.arena.survival.ArenaGame;
 import org.arena.survival.entity.Enemy;
 import org.arena.survival.entity.EnemyShooter;
 import org.arena.survival.entity.Player;
+import org.arena.survival.entity.UpgradeCard;
 import org.arena.survival.input.InputManager;
 import org.arena.survival.input.PlayerController;
 import org.arena.survival.screen.GameScreen;
@@ -62,6 +64,10 @@ public class GameLogicSystem {
     /** Weapon system handling shooting for player and enemies. */
     private final WeaponSystem weaponSystem;
 
+    private final UpgradeSystem upgradeSystem = new UpgradeSystem();
+
+    private Array<UpgradeCard> currentCards = new Array<>();
+
     /** Knockback strength applied to enemies on collision. */
     private static final float knockbackStrength = 150;
 
@@ -70,6 +76,8 @@ public class GameLogicSystem {
 
     /** Delay between waves in seconds. */
     private static final float waveDelay = 3f;
+
+    private boolean upgradeForWave = false;
 
     /**
      * Constructs the game logic system.
@@ -105,10 +113,10 @@ public class GameLogicSystem {
      */
     public void update(float delta, Player player, Array<Enemy> enemies, ArenaGame game) {
         handleInput(delta, player);
-        updateSystems(delta, player);
+        updateSystems(delta, player, enemies);
         handleCombat(enemies, player);
         updateEnemies(enemies, player, game, delta);
-        handleCollisions(delta, player, enemies, game);
+        handleCollisions(delta, player, enemies);
         winVerify(game);
         resetWave(enemies, player);
     }
@@ -128,13 +136,17 @@ public class GameLogicSystem {
         }
     }
 
+    public Array<UpgradeCard> getCurrentCards() {
+        return currentCards;
+    }
+
     /**
      * Updates core gameplay systems: player, AI, and bullets.
      */
-    private void updateSystems(float delta, Player player) {
+    private void updateSystems(float delta, Player player, Array<Enemy> enemies) {
         player.update(delta);
         enemyAI.update(delta);
-        bulletSystem.update(delta);
+        bulletSystem.update(delta, enemies);
         enemyBulletSystem.update(delta);
     }
 
@@ -169,9 +181,9 @@ public class GameLogicSystem {
      *     <li>Player bullets hitting enemies</li>
      * </ul>
      */
-    private void handleCollisions(float delta, Player player, Array<Enemy> enemies, ArenaGame game) {
-        collisionSystem.checkEnemyBullets(enemyBulletSystem.getBullets(), player, delta, game);
-        gameScreen.setScore(collisionSystem.update(bulletSystem.getBullets(), enemies, delta, gameScreen.getScore()));
+    private void handleCollisions(float delta, Player player, Array<Enemy> enemies) {
+        collisionSystem.checkEnemyBullets(enemyBulletSystem.getBullets(), player, delta);
+        gameScreen.setScore(collisionSystem.update(bulletSystem.getBullets(), enemies, delta, gameScreen.getScore(), player));
     }
 
     /**
@@ -193,15 +205,51 @@ public class GameLogicSystem {
      */
     private void resetWave(Array<Enemy> enemies, Player player) {
         if (enemies.size == 0) {
-            waveTimer += Gdx.graphics.getDeltaTime();
-            if (waveTimer >= waveDelay) {
-                gameScreen.setWaveNumber(gameScreen.getWaveNumber() + 1);
-                player.setAddHealth(3);
-                player.setShootCooldownPlayer(player.getShootCooldownPlayer() - 0.03f);
-                waveSystem.spawnWave(enemies, gameScreen.getWaveNumber());
-                waveTimer = 0;
+
+            if (!upgradeForWave) {
+
+                currentCards = upgradeSystem.getRandomCards();
+                gameScreen.setUpgradeActive(true);
+                upgradeForWave = true;
+                return;
+            }
+
+            if (!gameScreen.isUpgradeActive()) {
+                waveTimer += Gdx.graphics.getDeltaTime();
+                if (waveTimer >= waveDelay) {
+                    gameScreen.setWaveNumber(gameScreen.getWaveNumber() + 1);
+                    waveSystem.spawnWave(enemies, gameScreen.getWaveNumber());
+                    waveTimer = 0;
+                    upgradeForWave=false;
+                }
             }
         }
+    }
+
+    public void handleUpgradeSelection(Player player) {
+
+        if (!gameScreen.isUpgradeActive()) return;
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+            chooseUpgrade(player, 0);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+            chooseUpgrade(player, 1);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
+            chooseUpgrade(player, 2);
+        }
+    }
+
+    private void chooseUpgrade(Player player, int index) {
+
+        UpgradeCard card = currentCards.get(index);
+
+        PlayerUpgradeApplier.apply(player, card);
+
+        gameScreen.setUpgradeActive(false);
     }
 
 }

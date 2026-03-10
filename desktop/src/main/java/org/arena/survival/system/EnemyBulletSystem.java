@@ -37,7 +37,7 @@ public class EnemyBulletSystem {
      */
     public void update(float delta) {
         for (Bullet bullet : bullets) {
-            bullet.update(delta);
+            bullet.updateEnemyBullet(delta);
         }
     }
 

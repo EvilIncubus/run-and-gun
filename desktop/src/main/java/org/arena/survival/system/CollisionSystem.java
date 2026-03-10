@@ -2,7 +2,6 @@ package org.arena.survival.system;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
-import org.arena.survival.ArenaGame;
 import org.arena.survival.entity.Bullet;
 import org.arena.survival.entity.Enemy;
 import org.arena.survival.entity.Player;
@@ -24,12 +23,6 @@ import java.util.Random;
  */
 public class CollisionSystem {
 
-    /** Random generator for chance-based effects (like damage increase) */
-    private final Random random = new Random();
-
-    /** Damage dealt by each bullet */
-    private int damage = 1;
-
     /**
      * Updates all collisions between player bullets and enemies.
      * <p>
@@ -43,11 +36,11 @@ public class CollisionSystem {
      * @param score current player score
      * @return updated score after handling collisions
      */
-    public int update(Array<Bullet> bullets, Array<Enemy> enemies, float delta, int score) {
+    public int update(Array<Bullet> bullets, Array<Enemy> enemies, float delta, int score, Player player) {
         Iterator<Bullet> bulletIter = bullets.iterator();
         while (bulletIter.hasNext()) {
             Bullet bullet = bulletIter.next();
-            bullet.update(delta);
+            bullet.update(delta, enemies);
 
             // check collision with enemies
             for (Iterator<Enemy> enemyIter = enemies.iterator(); enemyIter.hasNext(); ) {
@@ -56,16 +49,11 @@ public class CollisionSystem {
                     bulletIter.remove();
 
                     // apply damage to enemy
-                    boolean dead = enemy.takeDamage(damage);
+                    boolean dead = enemy.takeDamage(player.getDamage());
 
                     if (dead) {
                         enemyIter.remove();
                         score += 1;
-
-                        // 10% chance to increase bullet damage
-                        if (random.nextInt(100) < 10) {
-                            damage += 1;
-                        }
                     }
                     break; // one bullet hits only one enemy
                 }
@@ -89,9 +77,8 @@ public class CollisionSystem {
      * @param enemyBullets array of bullets fired by enemies
      * @param player the player entity
      * @param delta time elapsed since last frame (seconds)
-     * @param game reference to the main game (for potential game state updates)
      */
-    public void checkEnemyBullets(Array<Bullet> enemyBullets, Player player, float delta, ArenaGame game) {
+    public void checkEnemyBullets(Array<Bullet> enemyBullets, Player player, float delta) {
 
         Iterator<Bullet> bulletIter = enemyBullets.iterator();
         Rectangle playerBounds = new Rectangle(
@@ -105,7 +92,7 @@ public class CollisionSystem {
             Bullet bullet = bulletIter.next();
 
             // update bullet movement
-            bullet.update(delta);
+            bullet.updateEnemyBullet(delta);
 
             // check collision with player
             if (bullet.getBounds().overlaps(playerBounds)) {
