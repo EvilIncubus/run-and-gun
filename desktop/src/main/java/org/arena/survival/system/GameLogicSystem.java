@@ -117,7 +117,6 @@ public class GameLogicSystem {
         handleCombat(enemies, player);
         updateEnemies(enemies, player, game, delta);
         handleCollisions(delta, player, enemies);
-        winVerify(game);
         resetWave(enemies, player);
     }
 
@@ -182,21 +181,11 @@ public class GameLogicSystem {
      * </ul>
      */
     private void handleCollisions(float delta, Player player, Array<Enemy> enemies) {
-        collisionSystem.checkEnemyBullets(enemyBulletSystem.getBullets(), player, delta);
-        gameScreen.setScore(collisionSystem.update(bulletSystem.getBullets(), enemies, delta, gameScreen.getScore(), player));
+        collisionSystem.checkEnemyBullets(enemyBulletSystem.getBullets(), player, delta, gameScreen.getWorldWidth(), gameScreen.getWorldHeight());
+        gameScreen.setScore(collisionSystem.update(bulletSystem.getBullets(), enemies, delta, gameScreen.getScore(), player, gameScreen.getWorldWidth(), gameScreen.getWorldHeight()));
     }
 
-    /**
-     * Verifies win conditions.
-     *
-     * <p>If the current wave number exceeds the maximum, the game returns to the main menu.</p>
-     */
-    private void winVerify(ArenaGame game) {
-        if (gameScreen.getWaveNumber() > gameScreen.getMaxWaves()) {
-            game.setScreen(new MenuScreen(game));
-            gameScreen.setWinGame(true);
-        }
-    }
+
 
     /**
      * Handles spawning of new waves.

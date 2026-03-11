@@ -73,7 +73,7 @@ public class PlayerController {
         return new Vector2(
                 mouse.x - player.getCenterX(),
                 mouse.y - player.getCenterY()
-        );
+        ).nor();
     }
 
     /**

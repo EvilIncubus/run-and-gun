@@ -27,6 +27,8 @@ public class Assets {
     /** Bullet texture (currently not used) */
     public static Texture bullet;
 
+    public static Texture map;
+
     // -------- Audio --------
 
     /** Background game music */
@@ -42,6 +44,8 @@ public class Assets {
      */
     public static void load() {
 
+        manager.load("assets/data/map.png", Texture.class);
+
         // Load textures
         manager.load("assets/data/player.png", Texture.class);
         manager.load("assets/data/enemy.png", Texture.class);
@@ -53,6 +57,8 @@ public class Assets {
 
         // Block until all assets are loaded
         manager.finishLoading();
+
+        map = manager.get("assets/data/map.png", Texture.class);
 
         // Assign loaded assets to static fields
         player = manager.get("assets/data/player.png", Texture.class);

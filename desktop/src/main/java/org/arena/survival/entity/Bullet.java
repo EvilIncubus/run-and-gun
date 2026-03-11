@@ -24,7 +24,7 @@ public class Bullet {
     private float speed = 1000;
 
     /** Size of the bullet (width and height). */
-    private float size = 6;
+    private float size = 3;
 
     private boolean homing;
 
@@ -52,12 +52,17 @@ public class Bullet {
      */
     public void render(ShapeRenderer shapeRenderer) {
         shapeRenderer.setColor(Color.YELLOW);
-        shapeRenderer.rect(
-                position.x - size / 2,
-                position.y - size / 2,
-                size,
-                size
-        );
+        // Длина пули (можно масштабировать под скорость)
+        float lengthFactor = 10f; // подбираешь по вкусу
+        float bulletWidth = size; // толщина пули
+
+        // start = текущая позиция пули
+        Vector2 start = new Vector2(position);
+
+        // end = позиция + direction * length
+        Vector2 end = new Vector2(direction).scl(speed / 100f * lengthFactor).add(start);
+
+        shapeRenderer.rectLine(start, end, bulletWidth);
     }
 
     /**
@@ -131,12 +136,11 @@ public class Bullet {
      *
      * @return true if the bullet is outside the world limits, false otherwise
      */
-    public boolean isOutOfBounds() {
-        float worldSize = 2000;
-        return position.x < -worldSize ||
-                position.x > worldSize ||
-                position.y < -worldSize ||
-                position.y > worldSize;
+    public boolean isOutOfBounds(float worldWidth, float worldHeight) {
+        return position.x < 0 ||
+                position.x > worldWidth ||
+                position.y < 0 ||
+                position.y > worldHeight;
     }
 
     /**

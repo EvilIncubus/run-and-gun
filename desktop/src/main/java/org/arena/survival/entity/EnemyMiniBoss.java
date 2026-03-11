@@ -12,7 +12,7 @@ public class EnemyMiniBoss extends Enemy{
     private Texture texture;
 
     /** Movement speed of the enemy in units per second. */
-    private float speed = 120;
+    private float speed = 200;
 
     /** Rotation angle of the enemy in degrees. */
     private float rotation;

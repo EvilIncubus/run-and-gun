@@ -12,7 +12,7 @@ public class FinalBoss extends Enemy{
     private Texture texture;
 
     /** Movement speed of the enemy in units per second. */
-    private float speed = 170;
+    private float speed = 250;
 
     /** Rotation angle of the enemy in degrees. */
     private float rotation;

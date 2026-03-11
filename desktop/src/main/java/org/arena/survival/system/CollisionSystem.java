@@ -36,7 +36,7 @@ public class CollisionSystem {
      * @param score current player score
      * @return updated score after handling collisions
      */
-    public int update(Array<Bullet> bullets, Array<Enemy> enemies, float delta, int score, Player player) {
+    public int update(Array<Bullet> bullets, Array<Enemy> enemies, float delta, int score, Player player, float worldWidth, float worldHeight) {
         Iterator<Bullet> bulletIter = bullets.iterator();
         while (bulletIter.hasNext()) {
             Bullet bullet = bulletIter.next();
@@ -60,7 +60,7 @@ public class CollisionSystem {
             }
 
             // remove bullets that go out of bounds
-            if (bullet.isOutOfBounds()) {
+            if (bullet.isOutOfBounds(worldWidth, worldHeight)) {
                 bulletIter.remove();
             }
         }
@@ -78,7 +78,7 @@ public class CollisionSystem {
      * @param player the player entity
      * @param delta time elapsed since last frame (seconds)
      */
-    public void checkEnemyBullets(Array<Bullet> enemyBullets, Player player, float delta) {
+    public void checkEnemyBullets(Array<Bullet> enemyBullets, Player player, float delta, float worldWidth, float worldHeight) {
 
         Iterator<Bullet> bulletIter = enemyBullets.iterator();
         Rectangle playerBounds = new Rectangle(
@@ -107,7 +107,7 @@ public class CollisionSystem {
             }
 
             // remove bullets that go out of bounds
-            if (bullet.isOutOfBounds()) {
+            if (bullet.isOutOfBounds(worldWidth, worldHeight)) {
                 bulletIter.remove();
             }
         }

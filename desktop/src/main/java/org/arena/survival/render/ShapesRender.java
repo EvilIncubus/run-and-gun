@@ -1,6 +1,5 @@
 package org.arena.survival.render;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
@@ -64,16 +63,16 @@ public class ShapesRender {
      * @param worldHeight height of the world used for HUD positioning
      * @param player the player entity whose HUD information will be displayed
      */
-    public void allShapesRender(Array<Enemy> enemies, float worldHeight, Player player) {
+    public void worldShapesRender(Array<Enemy> enemies, Player player, OrthographicCamera camera) {
 
+        shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
         // Render bullets
         bulletSystem.render(shapeRenderer);
         enemyBulletSystem.render(shapeRenderer);
 
         // Render player HUD
-        hudSystem.renderHUDHealth(shapeRenderer, worldHeight, player);
+        hudSystem.renderHUDHealth(shapeRenderer, camera.viewportHeight, player);
 
         // Render enemy health bars
         for (Enemy enemy : enemies) {
@@ -82,6 +81,17 @@ public class ShapesRender {
 
         shapeRenderer.end();
     }
+
+    public void hudShapesRender(Player player, OrthographicCamera hudCamera) {
+        shapeRenderer.setProjectionMatrix(hudCamera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        // Render player HUD
+        hudSystem.renderHUDHealth(shapeRenderer, hudCamera.viewportHeight, player);
+
+        shapeRenderer.end();
+    }
+
+
 
     /**
      * Disposes of the {@link ShapeRenderer} and frees GPU resources.

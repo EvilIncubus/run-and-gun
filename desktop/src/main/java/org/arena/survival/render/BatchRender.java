@@ -68,19 +68,32 @@ public class BatchRender {
      * @param maxWaves total number of waves
      * @param score player score
      */
-    public void allBatchRender(Array<Enemy> enemies, Player player, boolean screenChanging, boolean paused,
-                               boolean endGame, boolean winGame, float worldHeight, float worldWidth,
-                               float waveNumber, int maxWaves, int score) {
+    public void hudBatchRender(Player player, boolean screenChanging, boolean paused,
+                               boolean endGame, boolean winGame,
+                               float waveNumber, int maxWaves, int score, OrthographicCamera hudCamera) {
 
+        batch.setProjectionMatrix(hudCamera.combined);
         // Skip rendering if screen is changing
         if (screenChanging) return;
 
         batch.begin();
+        renderHUD(player, hudCamera.viewportHeight, waveNumber, maxWaves, score);
+        renderGameState(paused, endGame, winGame, hudCamera.viewportWidth, hudCamera.viewportHeight, score);
+        batch.end();
+    }
+
+    public void worldBatchRender(Player player, Array<Enemy> enemies, boolean screenChanging, OrthographicCamera worldCamera, float worldWidth, float worldHeight) {
+
+        batch.setProjectionMatrix(worldCamera.combined);
+        batch.begin();
+        batch.draw(Assets.map, 0, 0, worldWidth, worldHeight);
+        // Skip rendering if screen is changing
+        if (screenChanging){
+            batch.end();
+            return;
+        }
 
         renderWorld(player, enemies);
-        renderHUD(player, worldHeight, waveNumber, maxWaves, score);
-        renderGameState(paused, endGame, winGame, worldWidth, worldHeight, score);
-
         batch.end();
     }
 
@@ -93,7 +106,8 @@ public class BatchRender {
         batch.setProjectionMatrix(camera.combined);
     }
 
-    public void renderUpgradeCards(Array<UpgradeCard> cards) {
+    public void renderUpgradeCards(Array<UpgradeCard> cards, OrthographicCamera hudCamera) {
+        batch.setProjectionMatrix(hudCamera.combined);
         batch.begin();
         float cardWidth = 300;
         float cardHeight = 120;
@@ -157,14 +171,14 @@ public class BatchRender {
      * @param maxWaves maximum number of waves
      * @param score player score
      */
-    private void renderHUD(Player player, float worldHeight, float waveNumber, int maxWaves, int score) {
+    private void renderHUD(Player player, float cameraHeight, float waveNumber, int maxWaves, int score) {
 
         font.setColor(Color.WHITE);
         hudSystem.renderHUDInfo(
                 font,
                 batch,
                 player,
-                worldHeight,
+                cameraHeight,
                 waveNumber,
                 score,
                 maxWaves
@@ -182,18 +196,18 @@ public class BatchRender {
      * @param score player score
      */
     private void renderGameState(boolean paused, boolean endGame, boolean winGame,
-                                 float worldWidth, float worldHeight, int score) {
+                                 float cameraWidth, float cameraHeight, int score) {
 
         if (paused) {
-            renderPause(worldWidth, worldHeight);
+            renderPause(cameraWidth, cameraHeight);
         }
 
         if (endGame) {
-            renderGameOver(worldWidth, worldHeight, score);
+            renderGameOver(cameraWidth, cameraHeight, score);
         }
 
         if (winGame) {
-            renderWin(worldWidth, worldHeight, score);
+            renderWin(cameraWidth, cameraHeight, score);
         }
 
     }

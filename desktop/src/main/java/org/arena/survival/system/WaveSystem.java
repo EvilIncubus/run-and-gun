@@ -22,24 +22,28 @@ public class WaveSystem {
      */
     public void spawnWave(Array<Enemy> enemies, int wave) {
         int enemyCount = wave + 1; // number of enemies grows with wave number
-        float worldWidth = 1920;
-        float worldHeight = 1200;
+        float worldWidth = 6000;
+        float worldHeight = 6000;
 
         if (wave == 25){
-            Enemy boss = new FinalBoss(900, 500);
+            float x = (float) Math.random() * worldWidth;
+            float y = (float) Math.random() * worldHeight;
+            Enemy boss = new FinalBoss(x, y);
             enemies.add(boss);
             return;
         }
 
         // каждые 5 волн мини босс
         if (wave % 5 == 0) {
-            Enemy boss = new EnemyMiniBoss(900, 500);
+            float x = (float) Math.random() * worldWidth;
+            float y = (float) Math.random() * worldHeight;
+            Enemy boss = new EnemyMiniBoss(x, y);
             boss.setHealth(boss.getHealth() + wave * 10);
             boss.setMaxHealth(boss.getHealth());
             enemies.add(boss);
         }
 
-        for (int i = 0; i < enemyCount; i++) {
+        for (int i = 0; i < enemyCount * 2; i++) {
             float x = (float) Math.random() * worldWidth;
             float y = (float) Math.random() * worldHeight;
             Enemy enemy = new EnemyMelee(x, y);
@@ -49,7 +53,7 @@ public class WaveSystem {
             enemies.add(enemy);
         }
 
-        for (int i = 0; i < enemyCount/2; i++) {
+        for (int i = 0; i < enemyCount; i++) {
             float x1 = (float) Math.random() * worldWidth;
             float y1 = (float) Math.random() * worldHeight;
             Enemy shooter = new EnemyShooter(x1, y1);

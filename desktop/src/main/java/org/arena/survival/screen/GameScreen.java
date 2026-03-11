@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import org.arena.survival.ArenaGame;
 import org.arena.survival.entity.Enemy;
@@ -26,6 +27,7 @@ public class GameScreen implements Screen {
     private final ArenaGame game;
     private final Controller controller;
     private final OrthographicCamera camera;
+    private final OrthographicCamera hudCamera;
 
     private final PauseSystem pauseSystem = new PauseSystem();
     private final BulletSystem bulletSystem;
@@ -38,8 +40,11 @@ public class GameScreen implements Screen {
 
     private final Array<Enemy> enemies;
 
-    private final float worldWidth = 1920;
-    private final float worldHeight = 1200;
+    private final float cameraWidth = 1920;
+    private final float cameraHeight = 1200;
+
+    private final float worldWidth = 6000;
+    private final float worldHeight = 6000;
 
     private int waveNumber = 1;
     private int score = 0;
@@ -67,7 +72,9 @@ public class GameScreen implements Screen {
 
         // Camera setup
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, worldWidth, worldHeight);
+        camera.setToOrtho(false, cameraWidth, cameraHeight);
+        hudCamera = new OrthographicCamera();
+        hudCamera.setToOrtho(false, 1920, 1200);
 
         // Renderer setup
         shapesRender = new ShapesRender(bulletSystem, enemyBulletSystem);
@@ -89,8 +96,12 @@ public class GameScreen implements Screen {
 
         // Enemy initialization
         enemies = new Array<>();
-        enemies.add(new EnemyMelee(1000, 400));
-        enemies.add(new EnemyShooter(400, 500));
+        float x = (float) Math.random() * worldWidth;
+        float y = (float) Math.random() * worldHeight;
+        enemies.add(new EnemyMelee(x, y));
+        float x1 = (float) Math.random() * worldWidth;
+        float y1 = (float) Math.random() * worldHeight;
+        enemies.add(new EnemyShooter(x1, y1));
     }
 
     // --------------------- Screen Methods ---------------------
@@ -114,32 +125,34 @@ public class GameScreen implements Screen {
         setCamera();
 
         // Render world and HUD
-        batchRender.allBatchRender(enemies, player, screenChanging, paused, endGame, winGame,
-                worldHeight, worldWidth, waveNumber, maxWaves, score);
+        batchRender.worldBatchRender(player, enemies, screenChanging, camera, worldWidth, worldHeight);
+        batchRender.hudBatchRender(player, screenChanging, paused, endGame, winGame, waveNumber, maxWaves, score, hudCamera);
 
         // Update game logic and render shapes if not paused or ended
         if (!paused && !endGame && !winGame && !upgradeActive) {
             gameLogicSystem.update(delta, player, enemies, game);
-            shapesRender.allShapesRender(enemies, worldHeight, player);
+            shapesRender.worldShapesRender(enemies, player, camera);
+            shapesRender.hudShapesRender(player, hudCamera);
         }
 
         if (upgradeActive) {
             gameLogicSystem.handleUpgradeSelection(player);
             batchRender.renderUpgradeCards(
-                    gameLogicSystem.getCurrentCards()
+                    gameLogicSystem.getCurrentCards(),
+                    hudCamera
             );
         }
 
         // Pause menu handling
-        if (paused || endGame) {
+        if (paused || endGame || winGame) {
             handlePauseInput();
         }
 
+        // Check if player Win
+        winVerify();
         // Check if player died
-        if (player.getHealth() <= 0) {
-            endGame = true;
-        }
-
+        deadVerify();
+        // Set Pause
         setPauseGame();
     }
 
@@ -209,6 +222,13 @@ public class GameScreen implements Screen {
         return score;
     }
 
+    public float getWorldWidth() {
+        return worldWidth;
+    }
+
+    public float getWorldHeight() {
+        return worldHeight;
+    }
 
     public boolean isUpgradeActive() {
         return upgradeActive;
@@ -228,6 +248,22 @@ public class GameScreen implements Screen {
 
     /** Updates camera and sets projection matrices for renderers */
     private void setCamera() {
+        camera.position.set(
+                player.getCenterX(),
+                player.getCenterY(),
+                0
+        );
+        camera.position.x = MathUtils.clamp(
+                camera.position.x,
+                cameraWidth / 2,
+                worldWidth - cameraWidth / 2
+        );
+
+        camera.position.y = MathUtils.clamp(
+                camera.position.y,
+                cameraHeight / 2,
+                worldHeight - cameraHeight / 2
+        );
         camera.update();
         shapesRender.render(camera);
         batchRender.render(camera);
@@ -252,6 +288,23 @@ public class GameScreen implements Screen {
             paused = pauseSystem.setPauseWithController(paused, controller);
         } else {
             paused = pauseSystem.setPause(paused);
+        }
+    }
+
+    /**
+     * Verifies win conditions.
+     *
+     * <p>If the current wave number exceeds the maximum, the game returns to the main menu.</p>
+     */
+    private void winVerify() {
+        if (waveNumber > maxWaves) {
+            winGame = true;
+        }
+    }
+
+    private void deadVerify() {
+        if (player.getHealth() <= 0) {
+            endGame = true;
         }
     }
 }
