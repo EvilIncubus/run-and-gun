@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import org.arena.survival.assets.Assets;
+import org.arena.survival.system.MapSystem;
 
 /**
  * Abstract base class representing an enemy in the game.
@@ -71,7 +72,7 @@ public abstract class Enemy {
      * @param player the player object
      * @param delta  the time elapsed since the last frame in seconds
      */
-    public abstract void update(Player player, float delta);
+    public abstract void update(Player player, float delta, MapSystem mapSystem);
 
     /**
      * Reduces the enemy's health by the specified damage.

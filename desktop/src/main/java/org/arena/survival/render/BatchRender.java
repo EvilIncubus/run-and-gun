@@ -86,7 +86,7 @@ public class BatchRender {
 
         batch.setProjectionMatrix(worldCamera.combined);
         batch.begin();
-        batch.draw(Assets.map, 0, 0, worldWidth, worldHeight);
+        //drow world
         // Skip rendering if screen is changing
         if (screenChanging){
             batch.end();

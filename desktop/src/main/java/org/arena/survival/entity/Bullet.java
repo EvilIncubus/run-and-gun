@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import org.arena.survival.system.MapSystem;
 
 /**
  * Represents a bullet in the game.
@@ -70,8 +71,24 @@ public class Bullet {
      *
      * @param delta the time elapsed since the last frame in seconds
      */
-    public void update(float delta, Array<Enemy> enemies) {
+    public boolean update(float delta, Array<Enemy> enemies, MapSystem mapSystem) {
         movementUpdate(delta, enemies);
+
+        if (bulletHitsWall(mapSystem)) {
+            return true; // пулю нужно удалить
+        }
+
+        return false;
+    }
+
+    private boolean bulletHitsWall(MapSystem mapSystem) {
+
+        float r = size/2;
+
+        return mapSystem.isWall(position.x - r, position.y - r) ||
+                mapSystem.isWall(position.x + r, position.y - r) ||
+                mapSystem.isWall(position.x - r, position.y + r) ||
+                mapSystem.isWall(position.x + r, position.y + r);
     }
 
     /**
@@ -79,9 +96,14 @@ public class Bullet {
      *
      * @param delta the time elapsed since the last frame in seconds
      */
-    public void updateEnemyBullet(float delta) {
+    public boolean updateEnemyBullet(float delta, MapSystem mapSystem) {
         position.mulAdd(direction, speed * delta);
         bounds.setPosition(position.x - size / 2, position.y - size / 2);
+        if (mapSystem.isWall(position.x, position.y)) {
+            return true; // пулю нужно удалить
+        }
+
+        return false;
     }
 
 

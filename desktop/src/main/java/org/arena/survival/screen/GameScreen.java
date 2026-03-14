@@ -6,9 +6,12 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import org.arena.survival.ArenaGame;
+import org.arena.survival.assets.Assets;
 import org.arena.survival.entity.Enemy;
 import org.arena.survival.entity.EnemyMelee;
 import org.arena.survival.entity.EnemyShooter;
@@ -29,6 +32,8 @@ public class GameScreen implements Screen {
     private final OrthographicCamera camera;
     private final OrthographicCamera hudCamera;
 
+    private MapSystem mapSystem;
+
     private final PauseSystem pauseSystem = new PauseSystem();
     private final BulletSystem bulletSystem;
     private final EnemyBulletSystem enemyBulletSystem;
@@ -43,8 +48,8 @@ public class GameScreen implements Screen {
     private final float cameraWidth = 1920;
     private final float cameraHeight = 1200;
 
-    private final float worldWidth = 6000;
-    private final float worldHeight = 6000;
+    private final float worldWidth = 6200;
+    private final float worldHeight = 6200;
 
     private int waveNumber = 1;
     private int score = 0;
@@ -69,6 +74,9 @@ public class GameScreen implements Screen {
         this.controller = controller;
         this.bulletSystem = new BulletSystem();
         this.enemyBulletSystem = new EnemyBulletSystem();
+
+        TiledMap map = Assets.getMap();
+        mapSystem = new MapSystem(map);
 
         // Camera setup
         camera = new OrthographicCamera();
@@ -124,13 +132,15 @@ public class GameScreen implements Screen {
         cleanScreen();
         setCamera();
 
+        mapSystem.render(camera);
+
         // Render world and HUD
         batchRender.worldBatchRender(player, enemies, screenChanging, camera, worldWidth, worldHeight);
         batchRender.hudBatchRender(player, screenChanging, paused, endGame, winGame, waveNumber, maxWaves, score, hudCamera);
 
         // Update game logic and render shapes if not paused or ended
         if (!paused && !endGame && !winGame && !upgradeActive) {
-            gameLogicSystem.update(delta, player, enemies, game);
+            gameLogicSystem.update(delta, player, enemies, game, mapSystem);
             shapesRender.worldShapesRender(enemies, player, camera);
             shapesRender.hudShapesRender(player, hudCamera);
         }

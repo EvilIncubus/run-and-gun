@@ -13,7 +13,6 @@ public class PlayerMovementSystem {
 
     private float worldWidth;
     private float worldHeight;
-
     /**
      * Constructor for PlayerMovementSystem.
      *
@@ -33,13 +32,38 @@ public class PlayerMovementSystem {
      * @param direction movement direction vector
      * @param delta     time elapsed since last frame
      */
-    public void move(Player player, Vector2 direction, float delta) {
+    public void move(Player player, Vector2 direction, float delta, MapSystem mapSystem) {
         if (direction.len() > 0) {
             direction.nor();
-            player.getPosition().mulAdd(direction, player.getSpeed() * delta);
+        }
+
+        float moveX = direction.x * player.getSpeed() * delta;
+        float moveY = direction.y * player.getSpeed() * delta;
+
+        float newX = player.getPosition().x + moveX;
+        float newY = player.getPosition().y + moveY;
+
+        float size = player.getSize();
+
+        // движение по X
+        if (!isColliding(newX, player.getPosition().y, size, mapSystem)) {
+            player.getPosition().x = newX;
+        }
+
+        // движение по Y
+        if (!isColliding(player.getPosition().x, newY, size, mapSystem)) {
+            player.getPosition().y = newY;
         }
 
         clamp(player);
+    }
+
+    private boolean isColliding(float x, float y, float size, MapSystem mapSystem) {
+
+        return mapSystem.isWall(x, y) ||
+                mapSystem.isWall(x + size, y) ||
+                mapSystem.isWall(x, y + size) ||
+                mapSystem.isWall(x + size, y + size);
     }
 
     /**

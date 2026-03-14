@@ -111,21 +111,21 @@ public class GameLogicSystem {
      * @param enemies array of all enemies
      * @param game the game instance
      */
-    public void update(float delta, Player player, Array<Enemy> enemies, ArenaGame game) {
-        handleInput(delta, player);
-        updateSystems(delta, player, enemies);
+    public void update(float delta, Player player, Array<Enemy> enemies, ArenaGame game, MapSystem mapSystem) {
+        handleInput(delta, player, mapSystem);
+        updateSystems(delta, player, enemies, mapSystem);
         handleCombat(enemies, player);
-        updateEnemies(enemies, player, game, delta);
-        handleCollisions(delta, player, enemies);
+        updateEnemies(enemies, player, game, delta, mapSystem);
+        handleCollisions(delta, player, enemies, mapSystem);
         resetWave(enemies, player);
     }
 
     /**
      * Handles player input: movement, rotation, and shooting.
      */
-    private void handleInput(float delta, Player player) {
+    private void handleInput(float delta, Player player, MapSystem map) {
         Vector2 moveDir = inputManager.getMoveDirection();
-        movementSystem.move(player, moveDir, delta);
+        movementSystem.move(player, moveDir, delta, map);
 
         Vector2 aimDir = inputManager.getAimDirection(player);
         player.setRotation(aimDir.angleDeg());
@@ -142,11 +142,11 @@ public class GameLogicSystem {
     /**
      * Updates core gameplay systems: player, AI, and bullets.
      */
-    private void updateSystems(float delta, Player player, Array<Enemy> enemies) {
+    private void updateSystems(float delta, Player player, Array<Enemy> enemies, MapSystem mapSystem) {
         player.update(delta);
         enemyAI.update(delta);
-        bulletSystem.update(delta, enemies);
-        enemyBulletSystem.update(delta);
+        bulletSystem.update(delta, enemies, mapSystem);
+        enemyBulletSystem.update(delta, mapSystem);
     }
 
     /**
@@ -166,9 +166,9 @@ public class GameLogicSystem {
     /**
      * Updates enemy movement and applies knockback effects.
      */
-    private void updateEnemies(Array<Enemy> enemies, Player player, ArenaGame game, float delta) {
+    private void updateEnemies(Array<Enemy> enemies, Player player, ArenaGame game, float delta, MapSystem mapSystem) {
         for (Enemy enemy : enemies) {
-            enemy.update(player, delta);
+            enemy.update(player, delta, mapSystem);
             enemyAI.enemyMovementAndKnockback(enemy, player, game, knockbackStrength);
         }
     }
@@ -180,9 +180,9 @@ public class GameLogicSystem {
      *     <li>Player bullets hitting enemies</li>
      * </ul>
      */
-    private void handleCollisions(float delta, Player player, Array<Enemy> enemies) {
-        collisionSystem.checkEnemyBullets(enemyBulletSystem.getBullets(), player, delta, gameScreen.getWorldWidth(), gameScreen.getWorldHeight());
-        gameScreen.setScore(collisionSystem.update(bulletSystem.getBullets(), enemies, delta, gameScreen.getScore(), player, gameScreen.getWorldWidth(), gameScreen.getWorldHeight()));
+    private void handleCollisions(float delta, Player player, Array<Enemy> enemies, MapSystem mapSystem) {
+        collisionSystem.checkEnemyBullets(enemyBulletSystem.getBullets(), player, delta, gameScreen.getWorldWidth(), gameScreen.getWorldHeight(), mapSystem);
+        gameScreen.setScore(collisionSystem.update(bulletSystem.getBullets(), enemies, delta, gameScreen.getScore(), player, gameScreen.getWorldWidth(), gameScreen.getWorldHeight(), mapSystem));
     }
 
 

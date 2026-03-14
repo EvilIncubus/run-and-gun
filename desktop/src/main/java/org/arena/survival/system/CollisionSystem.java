@@ -36,11 +36,11 @@ public class CollisionSystem {
      * @param score current player score
      * @return updated score after handling collisions
      */
-    public int update(Array<Bullet> bullets, Array<Enemy> enemies, float delta, int score, Player player, float worldWidth, float worldHeight) {
+    public int update(Array<Bullet> bullets, Array<Enemy> enemies, float delta, int score, Player player, float worldWidth, float worldHeight, MapSystem mapSystem) {
         Iterator<Bullet> bulletIter = bullets.iterator();
         while (bulletIter.hasNext()) {
             Bullet bullet = bulletIter.next();
-            bullet.update(delta, enemies);
+            bullet.update(delta, enemies, mapSystem);
 
             // check collision with enemies
             for (Iterator<Enemy> enemyIter = enemies.iterator(); enemyIter.hasNext(); ) {
@@ -78,7 +78,7 @@ public class CollisionSystem {
      * @param player the player entity
      * @param delta time elapsed since last frame (seconds)
      */
-    public void checkEnemyBullets(Array<Bullet> enemyBullets, Player player, float delta, float worldWidth, float worldHeight) {
+    public void checkEnemyBullets(Array<Bullet> enemyBullets, Player player, float delta, float worldWidth, float worldHeight, MapSystem mapSystem) {
 
         Iterator<Bullet> bulletIter = enemyBullets.iterator();
         Rectangle playerBounds = new Rectangle(
@@ -92,7 +92,7 @@ public class CollisionSystem {
             Bullet bullet = bulletIter.next();
 
             // update bullet movement
-            bullet.updateEnemyBullet(delta);
+            bullet.updateEnemyBullet(delta, mapSystem);
 
             // check collision with player
             if (bullet.getBounds().overlaps(playerBounds)) {

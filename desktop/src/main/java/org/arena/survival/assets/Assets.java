@@ -4,6 +4,9 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapLoader;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 
 /**
  * Assets is a centralized class for managing all game resources.
@@ -27,8 +30,6 @@ public class Assets {
     /** Bullet texture (currently not used) */
     public static Texture bullet;
 
-    public static Texture map;
-
     // -------- Audio --------
 
     /** Background game music */
@@ -43,7 +44,6 @@ public class Assets {
      * This method blocks until all assets are fully loaded using {@link AssetManager#finishLoading()}.
      */
     public static void load() {
-
         manager.load("assets/data/map.png", Texture.class);
 
         // Load textures
@@ -58,8 +58,6 @@ public class Assets {
         // Block until all assets are loaded
         manager.finishLoading();
 
-        map = manager.get("assets/data/map.png", Texture.class);
-
         // Assign loaded assets to static fields
         player = manager.get("assets/data/player.png", Texture.class);
         enemy = manager.get("assets/data/enemy.png", Texture.class);
@@ -67,6 +65,10 @@ public class Assets {
 
         gameMusic = manager.get("assets/data/game_music.mp3", Music.class);
         shootSound = manager.get("assets/data/shotgun.wav", Sound.class);
+    }
+
+    public static TiledMap getMap() {
+        return new TmxMapLoader().load("assets/Arena.tmx");
     }
 
     /**

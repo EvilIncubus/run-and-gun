@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import org.arena.survival.assets.Assets;
+import org.arena.survival.system.MapSystem;
 
 /**
  * Represents a ranged-type enemy that moves towards the player and can shoot.
@@ -85,7 +86,7 @@ public class EnemyShooter extends Enemy {
      * @param delta  time elapsed since the last frame (in seconds)
      */
     @Override
-    public void update(Player player, float delta) {
+    public void update(Player player, float delta, MapSystem mapSystem) {
         // reduce shooting timer
         super.setEnemyTimerCooldown(delta);
 
@@ -98,7 +99,33 @@ public class EnemyShooter extends Enemy {
         // normalize and move
         if (direction.len() > 0) {
             direction.nor();
-            super.getPosition().mulAdd(direction, speed * delta);
+        }
+
+        float size = getSize();
+
+        boolean moved = false;
+
+        float moveX = direction.x * super.getSpeed() * delta;
+        float moveY = direction.y * super.getSpeed() * delta;
+
+        float newX = super.getPosition().x + moveX;
+        float newY = super.getPosition().y + moveY;
+
+        // 1️⃣ пробуем полное движение
+        if (!isColliding(newX, newY, size, mapSystem)) {
+            getPosition().set(newX, newY);
+            moved = true;
+        }
+
+        // 2️⃣ пробуем только X
+        if (!moved && !isColliding(newX, getPosition().y, size, mapSystem)) {
+            getPosition().x = newX;
+            moved = true;
+        }
+
+        // 3️⃣ пробуем только Y
+        if (!moved && !isColliding(getPosition().x, newY, size, mapSystem)) {
+            getPosition().y = newY;
         }
 
         // update rotation to face player
@@ -109,4 +136,14 @@ public class EnemyShooter extends Enemy {
         // update bounding box
         super.setBoundsPosition(super.getBounds().setPosition(super.getPosition().x, super.getPosition().y));
     }
+
+    private boolean isColliding(float x, float y, float size, MapSystem mapSystem) {
+
+        return mapSystem.isWall(x, y) ||
+                mapSystem.isWall(x + size - 1, y) ||
+                mapSystem.isWall(x, y + size - 1) ||
+                mapSystem.isWall(x + size - 1, y + size - 1);
+    }
+
+
 }

@@ -35,9 +35,13 @@ public class EnemyBulletSystem {
      *
      * @param delta time elapsed since last frame (in seconds)
      */
-    public void update(float delta) {
-        for (Bullet bullet : bullets) {
-            bullet.updateEnemyBullet(delta);
+    public void update(float delta, MapSystem mapSystem) {
+        for (int i = bullets.size - 1; i >= 0; i--) {
+            Bullet bullet = bullets.get(i);
+            boolean destroy = bullet.updateEnemyBullet(delta, mapSystem);
+            if (destroy) {
+                bullets.removeIndex(i);
+            }
         }
     }
 
